@@ -1,0 +1,90 @@
+{{extend './common/layout.art'}}
+{{block 'main'}}
+{{include './common/header.art'}}
+<!-- 主体内容 -->
+<div class="content">
+    {{include './common/aside.art'}}
+    <div class="main">
+        <!-- 分类标题 -->
+        <div class="title">
+            <h4>{{userInfo && userInfo.username}}</h4>
+        </div>
+        <!-- /分类标题 -->
+        <form class="form-container" action="{{link}}" method="POST" id="articleForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" class="form-control" placeholder="请输入文章标题" name="title"
+                    value="{{article && article.title}}">
+            </div>
+            <div class="form-group">
+                <label>作者</label>
+                <input type="text" class="form-control" readonly name="author" value="{{@userInfo && userInfo._id}}">
+            </div>
+            <div class="form-group">
+                <label>发布时间</label>
+                <input type="date" class="form-control" name="publicDate"
+                    value="{{dateFormat(article && article.publicDate),'yyyy-mm-dd'}}">
+            </div>
+
+            <div class="form-group">
+                <label for="exampleInputFile">文章封面</label>
+                <input type="file" name="cover" id="file">
+                <div class="thumbnail-waper">
+                    <img class="img-thumbnail" src="{{article && article.cover}}" id="preview">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>内容</label>
+                <textarea class="form-control" id="editor" name="content">{{@article && article.content}}</textarea>
+            </div>
+            <div class="buttons">
+                <input type="submit" class="btn btn-primary" value="{{button}}">
+            </div>
+        </form>
+
+    </div>
+</div>
+<!-- /主体内容 -->
+{{/block}}
+{{block 'script'}}
+<script src="/admin/lib/ckeditor5/ckeditor.js"></script>
+<script type="text/javascript">
+
+    let editor;
+
+    ClassicEditor
+        .create(document.querySelector('#editor'))
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+    // 获取数据
+    // const editorData = editor.getData();
+
+    $('#articleForm').on('submit', function () {
+        // 获取用户输入的标题和内容
+        const { title, content } = serializeObj(this);
+        if (title.trim().length == 0) {
+            alert('请输入标题');
+            return false;
+        }
+        if (content.replace(/<[^>]+>/g, '').replace('&nbsp;', '').trim().length == 0) {
+            alert('请输入内容');
+            return false;
+        }
+    })
+    // 给文件上传绑定change事件
+    $('#file').on('change', function () {
+        // 创建文件读取对象
+        var reader = new FileReader();
+        // 读取二进制文件
+        reader.readAsDataURL(this.files[0]);
+        reader.onload = function () {
+            document.getElementById('preview').src = reader.result;
+        }
+    })
+</script>
+{{/block}}
